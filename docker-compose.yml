@@ -1,7 +1,9 @@
+name: unatrack
+
 services:
   db:
     image: postgres:16-alpine
-    container_name: tinypath_db
+    container_name: unatrack_db
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -18,13 +20,14 @@ services:
 
   web:
     build: .
-    container_name: tinypath_web
+    container_name: unatrack_web
+    image: unatrack-web
     command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     ports:
       - "8000:8000"
     env_file: .env
     volumes:
-    - .:/app
+    - ./src:/app/src
     depends_on:
       db:
         condition: service_healthy

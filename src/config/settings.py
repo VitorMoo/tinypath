@@ -32,9 +32,6 @@ DEBUG = bool(int(os.getenv('DJANGO_DEBUG', '1')))
 
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',') if os.getenv('DJANGO_ALLOWED_HOSTS') else []
 
-
-# Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -42,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'user',
+    'core',
 ]
 
 MIDDLEWARE = [
@@ -81,9 +80,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'tinypath'),
-        'USER': os.getenv('POSTGRES_USER', 'tinypath'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'tinypath'),
+        'NAME': os.getenv('POSTGRES_DB', 'unatrack'),
+        'USER': os.getenv('POSTGRES_USER', 'unatrack'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'unatrack'),
         'HOST': os.getenv('POSTGRES_HOST', 'db'),
         'PORT': os.getenv('POSTGRES_PORT', '5432'),
     }
@@ -130,3 +129,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Custom User Model
+AUTH_USER_MODEL = 'user.CustomUser'

@@ -32,5 +32,45 @@ services:
       db:
         condition: service_healthy
 
+  redis:
+    image: redis:alpine
+    container_name: unatrack_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+
+  celery_worker:
+    build: .
+    container_name: unatrack_celery_worker
+    command: celery -A config worker -l info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - web
+
+  celery_beat:
+    build: .
+    container_name: unatrack_celery_beat
+    command: celery -A config beat -l info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - web
+
+  smtp:
+    image: mailhog/mailhog
+    container_name: unatrack_mailhog
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+
 volumes:
   pgdata:
+  redisdata:
+
+

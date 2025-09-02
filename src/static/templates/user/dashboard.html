@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <!-- Welcome Header -->
+
     <div class="row mb-4">
         <div class="col-12">
             <div class="bg-white rounded-3 shadow-sm p-4">
@@ -13,16 +13,16 @@
                     Bem-vindo, {{ user.first_name|default:user.username }}!
                 </h1>
                 <p class="text-muted mb-0">
-                    <i class="bi bi-calendar-today me-1"></i>
-                    Hoje é {% now "d \d\e F \d\e Y" %}
+                    <i class="bi bi-calendar-event me-1"></i>
+                    {% now "l, d \d\e F" %}
                 </p>
-            </div>
+                </div>
         </div>
     </div>
 
     <!-- Quick Stats -->
     <div class="row mb-4">
-        <div class="col-md-3 mb-3">
+            <div class="col-md-3">
             <div class="card text-center h-100">
                 <div class="card-body">
                     <i class="bi bi-book text-primary mb-3" style="font-size: 2rem;"></i>
@@ -33,7 +33,7 @@
             </div>
         </div>
 
-        <div class="col-md-3 mb-3">
+        <div class="col-md-3">
             <div class="card text-center h-100">
                 <div class="card-body">
                     <i class="bi bi-clipboard-check text-success mb-3" style="font-size: 2rem;"></i>
@@ -44,7 +44,7 @@
             </div>
         </div>
 
-        <div class="col-md-3 mb-3">
+        <div class="col-md-3">
             <div class="card text-center h-100">
                 <div class="card-body">
                     <i class="bi bi-exclamation-triangle text-warning mb-3" style="font-size: 2rem;"></i>
@@ -55,13 +55,13 @@
             </div>
         </div>
 
-        <div class="col-md-3 mb-3">
+        <div class="col-md-3">
             <div class="card text-center h-100">
                 <div class="card-body">
                     <i class="bi bi-check-circle text-info mb-3" style="font-size: 2rem;"></i>
                     <h5 class="card-title">Concluídas</h5>
                     <h3 class="text-info mb-0">0</h3>
-                    <small class="text-muted">Este mês</small>
+                    <small class="text-muted">Este semestre</small>
                 </div>
             </div>
         </div>
@@ -69,9 +69,8 @@
 
     <!-- Main Content Area -->
     <div class="row">
-        <!-- Left Column -->
+        <!-- Recent Activities (Left Column) -->
         <div class="col-lg-8 mb-4">
-            <!-- Recent Activities -->
             <div class="card h-100">
                 <div class="card-header bg-white">
                     <h5 class="card-title mb-0">
@@ -91,6 +90,7 @@
 
         <!-- Right Column -->
         <div class="col-lg-4">
+
             <!-- Quick Actions -->
             <div class="card mb-4">
                 <div class="card-header bg-white">
@@ -101,10 +101,6 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <button class="btn btn-primary" type="button">
-                            <i class="bi bi-plus-circle me-2"></i>
-                            Nova Atividade
-                        </button>
                         <button class="btn btn-outline-primary" type="button">
                             <i class="bi bi-book me-2"></i>
                             Gerenciar Disciplinas
@@ -169,7 +165,9 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
+
+        </div> <!-- End Right Column -->
+    </div> <!-- End Main Row -->
+
+</div> <!-- End Container -->
 {% endblock %}

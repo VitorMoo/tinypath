@@ -6,11 +6,18 @@ from django.views.decorators.csrf import csrf_protect
 from .models import CustomUser
 
 
+@login_required
+def dashboard_view(request):
+    context = {
+        'user': request.user,
+    }
+    return render(request, 'user/dashboard.html', context)
+
+
 @csrf_protect
 def login_view(request):
-    """View para login do usuário"""
     if request.user.is_authenticated:
-        return redirect('#')
+        return redirect('dashboard')
 
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -20,7 +27,7 @@ def login_view(request):
             user = authenticate(request, username=email, password=password)
             if user:
                 login(request, user)
-                next_url = request.GET.get('next', '#')
+                next_url = request.GET.get('next', 'dashboard')
                 return redirect(next_url)
             else:
                 messages.error(request, 'E-mail ou senha inválidos.')
@@ -32,9 +39,8 @@ def login_view(request):
 
 @csrf_protect
 def register_view(request):
-    """View para cadastro de usuário"""
     if request.user.is_authenticated:
-        return redirect('#')
+        return redirect('dashboard')
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -48,10 +54,10 @@ def register_view(request):
             messages.error(request, 'Por favor, preencha todos os campos.')
         elif password1 != password2:
             messages.error(request, 'As senhas não coincidem.')
-        elif CustomUser.objects.filter(email=email).exists():
-            messages.error(request, 'Já existe um usuário com este e-mail.')
         elif CustomUser.objects.filter(username=username).exists():
             messages.error(request, 'Já existe um usuário com este nome de usuário.')
+        elif CustomUser.objects.filter(email=email).exists():
+            messages.error(request, 'Já existe um usuário com este e-mail.')
         else:
             try:
                 user = CustomUser.objects.create_user(
@@ -70,7 +76,6 @@ def register_view(request):
 
 
 def logout_view(request):
-    """View para logout do usuário"""
     logout(request)
     messages.success(request, 'Logout realizado com sucesso!')
     return redirect('login')

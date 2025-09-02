@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - UnaTrack{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="bg-white rounded-3 shadow-sm p-4">
+                <h1 class="display-6 mb-2">
+                    <i class="bi bi-house-door text-primary me-2"></i>
+                    Bem-vindo, {{ user.first_name|default:user.username }}!
+                </h1>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-calendar-today me-1"></i>
+                    Hoje é {% now "d \d\e F \d\e Y" %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="bi bi-book text-primary mb-3" style="font-size: 2rem;"></i>
+                    <h5 class="card-title">Disciplinas</h5>
+                    <h3 class="text-primary mb-0">0</h3>
+                    <small class="text-muted">Cadastradas</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="bi bi-clipboard-check text-success mb-3" style="font-size: 2rem;"></i>
+                    <h5 class="card-title">Atividades</h5>
+                    <h3 class="text-success mb-0">0</h3>
+                    <small class="text-muted">Pendentes</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="bi bi-exclamation-triangle text-warning mb-3" style="font-size: 2rem;"></i>
+                    <h5 class="card-title">Alertas</h5>
+                    <h3 class="text-warning mb-0">0</h3>
+                    <small class="text-muted">Próximos do vencimento</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="bi bi-check-circle text-info mb-3" style="font-size: 2rem;"></i>
+                    <h5 class="card-title">Concluídas</h5>
+                    <h3 class="text-info mb-0">0</h3>
+                    <small class="text-muted">Este mês</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8 mb-4">
+            <!-- Recent Activities -->
+            <div class="card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Atividades Recentes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                        <p class="mt-3 mb-0">Nenhuma atividade encontrada</p>
+                        <small>Suas próximas atividades aparecerão aqui</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-lightning me-2"></i>
+                        Ações Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" type="button">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Nova Atividade
+                        </button>
+                        <button class="btn btn-outline-primary" type="button">
+                            <i class="bi bi-book me-2"></i>
+                            Gerenciar Disciplinas
+                        </button>
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="bi bi-gear me-2"></i>
+                            Configurações
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Info -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-person me-2"></i>
+                        Informações da Conta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-0">
+                        <div class="col-4 text-center">
+                            <i class="bi bi-person-circle text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <div class="col-8">
+                            <h6 class="mb-1">{{ user.complete_name }}</h6>
+                            <p class="text-muted mb-1">{{ user.email }}</p>
+                            <small class="text-muted">
+                                Membro desde {{ user.date_joined|date:"M Y" }}
+                            </small>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <small class="text-muted d-block">Alertas</small>
+                            <span class="fw-bold">{{ user.dias_antecedencia_alerta }} dias</span>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted d-block">E-mails</small>
+                            <span class="fw-bold">
+                                {% if user.receber_emails %}
+                                    <i class="bi bi-check-circle text-success"></i>
+                                {% else %}
+                                    <i class="bi bi-x-circle text-danger"></i>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted d-block">UNAERP</small>
+                            <span class="fw-bold">
+                                {% if user.has_unaerp_credentials %}
+                                    <i class="bi bi-check-circle text-success"></i>
+                                {% else %}
+                                    <i class="bi bi-x-circle text-danger"></i>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

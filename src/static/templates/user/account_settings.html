@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+
+{% block title %}Configurações da Conta - UnaTrack{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Cabeçalho -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="bg-white rounded-3 shadow-sm p-4">
+                <h1 class="display-6 mb-2">
+                    <i class="bi bi-gear text-primary me-2"></i>
+                    Configurações da Conta
+                </h1>
+                <p class="text-muted mb-0">
+                    Gerencie suas informações pessoais e preferências
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensagens -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <!-- Informações Pessoais -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-person me-2"></i>
+                        Informações Pessoais
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="first_name" class="form-label">Nome</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name"
+                                       value="{{ user.first_name }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="last_name" class="form-label">Sobrenome</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name"
+                                       value="{{ user.last_name }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">E-mail</label>
+                            <input type="email" class="form-control" id="email"
+                                   value="{{ user.email }}" disabled>
+                            <div class="form-text">O e-mail não pode ser alterado.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Nome de Usuário</label>
+                            <input type="text" class="form-control" id="username"
+                                   value="{{ user.username }}" disabled>
+                            <div class="form-text">O nome de usuário não pode ser alterado.</div>
+                        </div>
+
+                        <button type="submit" name="update_profile" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-2"></i>
+                            Salvar Alterações
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preferências -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-sliders me-2"></i>
+                        Preferências
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="dias_antecedencia_alerta" class="form-label">
+                                Alerta de Atividades (dias de antecedência)
+                            </label>
+                            <select class="form-select" id="dias_antecedencia_alerta" name="dias_antecedencia_alerta">
+                                <option value="1" {% if user.dias_antecedencia_alerta == 1 %}selected{% endif %}>1 dia</option>
+                                <option value="2" {% if user.dias_antecedencia_alerta == 2 %}selected{% endif %}>2 dias</option>
+                                <option value="3" {% if user.dias_antecedencia_alerta == 3 %}selected{% endif %}>3 dias</option>
+                                <option value="5" {% if user.dias_antecedencia_alerta == 5 %}selected{% endif %}>5 dias</option>
+                                <option value="7" {% if user.dias_antecedencia_alerta == 7 %}selected{% endif %}>7 dias</option>
+                            </select>
+                            <div class="form-text">Quantos dias antes do prazo você quer ser alertado.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="receber_emails"
+                                       name="receber_emails" {% if user.receber_emails %}checked{% endif %}>
+                                <label class="form-check-label" for="receber_emails">
+                                    Receber notificações por e-mail
+                                </label>
+                            </div>
+                            <div class="form-text">Receba alertas de atividades próximas por e-mail.</div>
+                        </div>
+
+                        <button type="submit" name="update_profile" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-2"></i>
+                            Salvar Preferências
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Alterar Senha -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-shield-lock me-2"></i>
+                        Alterar Senha
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="current_password" class="form-label">Senha Atual</label>
+                            <input type="password" class="form-control" id="current_password"
+                                   name="current_password" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="new_password" class="form-label">Nova Senha</label>
+                            <input type="password" class="form-control" id="new_password"
+                                   name="new_password" required>
+                            <div class="form-text">Mínimo de 8 caracteres.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">Confirmar Nova Senha</label>
+                            <input type="password" class="form-control" id="confirm_password"
+                                   name="confirm_password" required>
+                        </div>
+
+                        <button type="submit" name="update_password" class="btn btn-warning">
+                            <i class="bi bi-key me-2"></i>
+                            Alterar Senha
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações da Conta -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Informações da Conta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Membro desde:</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            {{ user.date_joined|date:"d/m/Y" }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Último login:</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            {{ user.last_login|date:"d/m/Y H:i"|default:"Nunca" }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Credenciais UNAERP:</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            {% if user.has_unaerp_credentials %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    Configuradas
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-x-circle me-1"></i>
+                                    Não configuradas
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Status da conta:</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            {% if user.is_active %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    Ativa
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-x-circle me-1"></i>
+                                    Inativa
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if not user.has_unaerp_credentials %}
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Atenção:</strong> Configure suas credenciais do UNAERP para sincronizar suas disciplinas e atividades.
+                        <a href="{% url 'scraping:dashboard' %}" class="alert-link">Configurar agora</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ações da Conta -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Zona de Perigo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Estas ações são irreversíveis. Tenha certeza antes de prosseguir.
+                    </p>
+
+                    <div class="d-flex gap-3">
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#clearDataModal">
+                            <i class="bi bi-trash me-2"></i>
+                            Limpar Dados
+                        </button>
+
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                            <i class="bi bi-person-x me-2"></i>
+                            Excluir Conta
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Limpar Dados -->
+<div class="modal fade" id="clearDataModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Limpar Dados</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja limpar todos os dados de disciplinas e atividades?</p>
+                <p class="text-muted">Esta ação não pode ser desfeita. Você precisará sincronizar novamente para recuperar os dados.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger">Limpar Dados</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Excluir Conta -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Excluir Conta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir sua conta permanentemente?</p>
+                <p class="text-danger"><strong>Esta ação não pode ser desfeita!</strong></p>
+                <p>Todos os seus dados, disciplinas e atividades serão perdidos.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger">Excluir Conta</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

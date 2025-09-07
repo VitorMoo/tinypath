@@ -27,7 +27,7 @@
                 <div class="card-body">
                     <i class="bi bi-book text-primary mb-3" style="font-size: 2rem;"></i>
                     <h5 class="card-title">Disciplinas</h5>
-                    <h3 class="text-primary mb-0">0</h3>
+                    <h3 class="text-primary mb-0">{{ total_courses }}</h3>
                     <small class="text-muted">Cadastradas</small>
                 </div>
             </div>
@@ -38,8 +38,8 @@
                 <div class="card-body">
                     <i class="bi bi-clipboard-check text-success mb-3" style="font-size: 2rem;"></i>
                     <h5 class="card-title">Atividades</h5>
-                    <h3 class="text-success mb-0">0</h3>
-                    <small class="text-muted">Pendentes</small>
+                    <h3 class="text-success mb-0">{{ total_assignments }}</h3>
+                    <small class="text-muted">Total</small>
                 </div>
             </div>
         </div>
@@ -48,9 +48,9 @@
             <div class="card text-center h-100">
                 <div class="card-body">
                     <i class="bi bi-exclamation-triangle text-warning mb-3" style="font-size: 2rem;"></i>
-                    <h5 class="card-title">Alertas</h5>
-                    <h3 class="text-warning mb-0">0</h3>
-                    <small class="text-muted">Próximos do vencimento</small>
+                    <h5 class="card-title">Próximas</h5>
+                    <h3 class="text-warning mb-0">{{ upcoming_assignments }}</h3>
+                    <small class="text-muted">Próximos 7 dias</small>
                 </div>
             </div>
         </div>
@@ -59,9 +59,11 @@
             <div class="card text-center h-100">
                 <div class="card-body">
                     <i class="bi bi-check-circle text-info mb-3" style="font-size: 2rem;"></i>
-                    <h5 class="card-title">Concluídas</h5>
-                    <h3 class="text-info mb-0">0</h3>
-                    <small class="text-muted">Este semestre</small>
+                    <h5 class="card-title">Última Sync</h5>
+                    <h3 class="text-info mb-0">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </h3>
+                    <small class="text-muted">Dados atualizados</small>
                 </div>
             </div>
         </div>
@@ -69,105 +71,77 @@
 
     <!-- Main Content Area -->
     <div class="row">
-        <!-- Recent Activities (Left Column) -->
-        <div class="col-lg-8 mb-4">
-            <div class="card h-100">
+        <!-- Welcome Card (Full Width) -->
+        <div class="col-12 mb-4">
+            <div class="card">
                 <div class="card-header bg-white">
                     <h5 class="card-title mb-0">
-                        <i class="bi bi-clock-history me-2"></i>
-                        Atividades Recentes
+                        <i class="bi bi-speedometer2 me-2"></i>
+                        Resumo das Atividades
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="text-center text-muted py-5">
-                        <i class="bi bi-inbox" style="font-size: 3rem;"></i>
-                        <p class="mt-3 mb-0">Nenhuma atividade encontrada</p>
-                        <small>Suas próximas atividades aparecerão aqui</small>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">Suas Disciplinas</h6>
+                            {% if courses %}
+                                <div class="list-group list-group-flush">
+                                    {% for course in courses %}
+                                    <div class="list-group-item border-0 px-0 py-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">{{ course.name|truncatechars:40 }}</h6>
+                                                <small class="text-muted">{{ course.code }}</small>
+                                            </div>
+                                            <span class="badge bg-primary rounded-pill">
+                                                {{ course.assignment_set.count }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="text-center mt-3">
+                                    <a href="{% url 'courses' %}" class="btn btn-outline-primary btn-sm">
+                                        Ver Todas as Disciplinas
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="text-center text-muted py-3">
+                                    <i class="bi bi-book" style="font-size: 2rem;"></i>
+                                    <p class="mt-2 mb-2">Nenhuma disciplina encontrada</p>
+                                    <a href="{% url 'scraping:dashboard' %}" class="btn btn-primary btn-sm">
+                                        Sincronizar Disciplinas
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">Ações Rápidas</h6>
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'scraping:dashboard' %}" class="btn btn-primary">
+                                    <i class="bi bi-arrow-clockwise me-2"></i>
+                                    Sincronização UNAERP
+                                </a>
+                                <a href="{% url 'courses' %}" class="btn btn-outline-primary">
+                                    <i class="bi bi-book me-2"></i>
+                                    Gerenciar Disciplinas
+                                </a>
+                                <a href="{% url 'assignments' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-list-task me-2"></i>
+                                    Ver Atividades
+                                </a>
+                                <a href="{% url 'account_settings' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-gear me-2"></i>
+                                    Configurações da Conta
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Right Column -->
-        <div class="col-lg-4">
-
-            <!-- Quick Actions -->
-            <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-lightning me-2"></i>
-                        Ações Rápidas
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-outline-primary" type="button">
-                            <i class="bi bi-book me-2"></i>
-                            Gerenciar Disciplinas
-                        </button>
-                        <button class="btn btn-outline-secondary" type="button">
-                            <i class="bi bi-gear me-2"></i>
-                            Configurações
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- User Info -->
-            <div class="card">
-                <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-person me-2"></i>
-                        Informações da Conta
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-0">
-                        <div class="col-4 text-center">
-                            <i class="bi bi-person-circle text-primary" style="font-size: 3rem;"></i>
-                        </div>
-                        <div class="col-8">
-                            <h6 class="mb-1">{{ user.complete_name }}</h6>
-                            <p class="text-muted mb-1">{{ user.email }}</p>
-                            <small class="text-muted">
-                                Membro desde {{ user.date_joined|date:"M Y" }}
-                            </small>
-                        </div>
-                    </div>
-
-                    <hr>
-
-                    <div class="row text-center">
-                        <div class="col-4">
-                            <small class="text-muted d-block">Alertas</small>
-                            <span class="fw-bold">{{ user.dias_antecedencia_alerta }} dias</span>
-                        </div>
-                        <div class="col-4">
-                            <small class="text-muted d-block">E-mails</small>
-                            <span class="fw-bold">
-                                {% if user.receber_emails %}
-                                    <i class="bi bi-check-circle text-success"></i>
-                                {% else %}
-                                    <i class="bi bi-x-circle text-danger"></i>
-                                {% endif %}
-                            </span>
-                        </div>
-                        <div class="col-4">
-                            <small class="text-muted d-block">UNAERP</small>
-                            <span class="fw-bold">
-                                {% if user.has_unaerp_credentials %}
-                                    <i class="bi bi-check-circle text-success"></i>
-                                {% else %}
-                                    <i class="bi bi-x-circle text-danger"></i>
-                                {% endif %}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div> <!-- End Right Column -->
-    </div> <!-- End Main Row -->
+    </div>
 
 </div> <!-- End Container -->
 {% endblock %}

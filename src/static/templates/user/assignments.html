@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+
+{% block title %}Atividades - UnaTrack{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Cabeçalho -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="bg-white rounded-3 shadow-sm p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="display-6 mb-2">
+                            <i class="bi bi-list-task text-primary me-2"></i>
+                            Minhas Atividades
+                        </h1>
+                        <p class="text-muted mb-0">
+                            Acompanhe todas as suas atividades acadêmicas
+                        </p>
+                    </div>
+                    <div>
+                        <a href="{% url 'scraping:dashboard' %}" class="btn btn-primary">
+                            <i class="bi bi-arrow-clockwise me-2"></i>
+                            Sincronizar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-clipboard-check text-primary mb-3" style="font-size: 2rem;"></i>
+                    <h4 class="text-primary">{{ total_assignments }}</h4>
+                    <small class="text-muted">Total de Atividades</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-exclamation-triangle text-danger mb-3" style="font-size: 2rem;"></i>
+                    <h4 class="text-danger">{{ overdue_count }}</h4>
+                    <small class="text-muted">Atrasadas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-calendar-event text-warning mb-3" style="font-size: 2rem;"></i>
+                    <h4 class="text-warning">{{ upcoming_count }}</h4>
+                    <small class="text-muted">Próximas (7 dias)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-clock text-info mb-3" style="font-size: 2rem;"></i>
+                    <h4 class="text-info">{{ assignments_without_due.count }}</h4>
+                    <small class="text-muted">Sem Prazo</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label for="course" class="form-label">Filtrar por Disciplina</label>
+                            <select name="course" id="course" class="form-select">
+                                <option value="">Todas as disciplinas</option>
+                                {% for course in courses %}
+                                <option value="{{ course.id }}" {% if selected_course == course.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ course.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-funnel me-2"></i>
+                                Filtrar
+                            </button>
+                        </div>
+                        <div class="col-md-2">
+                            <a href="{% url 'assignments' %}" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-x-circle me-2"></i>
+                                Limpar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Atividades -->
+    <div class="row">
+        <!-- Atividades com Prazo -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-calendar-check me-2"></i>
+                        Atividades com Prazo ({{ assignments_with_due.count }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if assignments_with_due %}
+                        <div class="list-group list-group-flush">
+                            {% for assignment in assignments_with_due %}
+                            <div class="list-group-item border-0 px-0">
+                                <div class="d-flex w-100 justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <h6 class="mb-0 me-2">{{ assignment.title }}</h6>
+                                            {% if assignment.type == 'quiz' %}
+                                                <span class="badge bg-info rounded-pill">Questionário</span>
+                                            {% elif assignment.type == 'assignment' %}
+                                                <span class="badge bg-primary rounded-pill">Tarefa</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary rounded-pill">{{ assignment.type|title }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <p class="mb-1 text-muted">
+                                            <i class="bi bi-book me-1"></i>
+                                            {{ assignment.course.name }}
+                                        </p>
+                                        {% if assignment.description %}
+                                            <small class="text-muted">{{ assignment.description|truncatechars:150 }}</small>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-end">
+                                        {% if assignment.due_date %}
+                                            {% now "Y-m-d" as today %}
+                                            {% if assignment.due_date|date:"Y-m-d" < today %}
+                                                <span class="badge bg-danger mb-2">Atrasado</span>
+                                            {% elif assignment.due_date|date:"Y-m-d" == today %}
+                                                <span class="badge bg-warning mb-2">Hoje</span>
+                                            {% else %}
+                                                <span class="badge bg-success mb-2">No Prazo</span>
+                                            {% endif %}
+                                            <div class="text-muted">
+                                                <i class="bi bi-calendar-event me-1"></i>
+                                                {{ assignment.due_date|date:"d/m/Y" }}
+                                            </div>
+                                        {% endif %}
+                                        {% if assignment.assignment_url %}
+                                            <a href="{{ assignment.assignment_url }}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                                                <i class="bi bi-box-arrow-up-right me-1"></i>
+                                                Abrir
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% if not forloop.last %}<hr class="my-2">{% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-calendar-x" style="font-size: 3rem;"></i>
+                            <p class="mt-3 mb-0">Nenhuma atividade com prazo definido</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Atividades sem Prazo -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock me-2"></i>
+                        Sem Prazo Definido ({{ assignments_without_due.count }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if assignments_without_due %}
+                        <div class="list-group list-group-flush">
+                            {% for assignment in assignments_without_due %}
+                            <div class="list-group-item border-0 px-0 py-2">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">{{ assignment.title|truncatechars:30 }}</h6>
+                                        <small class="text-muted">{{ assignment.course.name|truncatechars:25 }}</small>
+                                        <div class="mt-1">
+                                            {% if assignment.type == 'quiz' %}
+                                                <span class="badge bg-info rounded-pill">Questionário</span>
+                                            {% elif assignment.type == 'assignment' %}
+                                                <span class="badge bg-primary rounded-pill">Tarefa</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary rounded-pill">{{ assignment.type|title }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% if assignment.assignment_url %}
+                                    <a href="{{ assignment.assignment_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-box-arrow-up-right"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if not forloop.last %}<hr class="my-1">{% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
+                            <p class="mt-2 mb-0">Todas as atividades têm prazo definido</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if not assignments %}
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-inbox" style="font-size: 4rem;"></i>
+                <h4 class="mt-3">Nenhuma atividade encontrada</h4>
+                <p class="mb-4">Execute uma sincronização para buscar suas atividades do UNAERP</p>
+                <a href="{% url 'scraping:dashboard' %}" class="btn btn-primary">
+                    <i class="bi bi-arrow-clockwise me-2"></i>
+                    Sincronizar Atividades
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

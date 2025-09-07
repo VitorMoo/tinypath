@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard de Sincronização{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Header -->
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="fas fa-sync me-2"></i>
+                    Dashboard de Sincronização
+                </h2>
+                {% if has_credentials %}
+                    <button id="start-scraping" class="btn btn-success">
+                        <i class="fas fa-play me-2"></i>
+                        Sincronizar Agora
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Status das Credenciais -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-key me-2"></i>
+                        Status das Credenciais
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if has_credentials %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Configuradas</strong>
+                            <br>RA: {{ credentials.ra }}
+                            {% if credentials.last_sync %}
+                                <br><small>Última sync: {{ credentials.last_sync|date:"d/m/Y H:i" }}</small>
+                            {% else %}
+                                <br><small class="text-warning">Nunca sincronizado</small>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid">
+                            <a href="{% url 'scraping:credentials' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-edit me-2"></i>
+                                Editar Credenciais
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Não configuradas</strong>
+                            <br>Configure suas credenciais para sincronizar automaticamente.
+                        </div>
+
+                        <div class="d-grid">
+                            <a href="{% url 'scraping:credentials' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>
+                                Configurar Credenciais
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Estatísticas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="p-3">
+                                <h3 class="text-primary">{{ total_courses }}</h3>
+                                <small class="text-muted">Disciplinas</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3">
+                                <h3 class="text-info">{{ total_assignments }}</h3>
+                                <small class="text-muted">Atividades</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3">
+                                <h3 class="text-warning">{{ pending_assignments }}</h3>
+                                <small class="text-muted">Pendentes</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status da Sincronização -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tasks me-2"></i>
+                        Status da Sincronização
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="sync-status" class="d-none">
+                        <div class="alert alert-info">
+                            <div class="d-flex align-items-center">
+                                <div class="spinner-border spinner-border-sm me-3" role="status">
+                                    <span class="visually-hidden">Carregando...</span>
+                                </div>
+                                <div>
+                                    <strong>Sincronização em andamento...</strong>
+                                    <br><small id="sync-message">Iniciando...</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="progress mb-3" style="height: 10px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar" style="width: 0%" id="sync-progress"></div>
+                        </div>
+                    </div>
+
+                    <div id="sync-idle">
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-clock me-2"></i>
+                            Nenhuma sincronização em andamento.
+                            {% if has_credentials %}
+                                Clique em "Sincronizar Agora" para iniciar uma sincronização manual.
+                            {% else %}
+                                Configure suas credenciais para habilitar a sincronização.
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div id="sync-complete" class="d-none">
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Sincronização concluída!</strong>
+                            <div id="sync-results" class="mt-2"></div>
+                        </div>
+                    </div>
+
+                    <div id="sync-error" class="d-none">
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <strong>Erro na sincronização</strong>
+                            <div id="sync-error-message" class="mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startButton = document.getElementById('start-scraping');
+
+    if (startButton) {
+        startButton.addEventListener('click', function() {
+            startScraping();
+        });
+    }
+
+    function startScraping() {
+        console.log('=== INICIANDO SINCRONIZAÇÃO ===');
+        console.log('startScraping function called');
+
+        // Desabilitar botão
+        startButton.disabled = true;
+        startButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Iniciando...';
+
+        // Mostrar status
+        showSyncStatus();
+
+        console.log('Making AJAX request to:', '{% url "scraping:start_scraping" %}');
+        console.log('CSRF Token:', '{{ csrf_token }}');
+
+        // Fazer requisição AJAX
+        fetch('{% url "scraping:start_scraping" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            console.log('Response received:', response);
+            console.log('Response status:', response.status);
+            console.log('Response OK:', response.ok);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Data received:', data);
+            if (data.success) {
+                console.log('Starting task monitoring for ID:', data.task_id);
+                checkTaskStatus(data.task_id);
+            } else {
+                console.error('Scraping failed:', data.error);
+                showSyncError(data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            showSyncError('Erro de conexão: ' + error.message);
+        });
+    }
+
+    function checkTaskStatus(taskId) {
+        const interval = setInterval(() => {
+            fetch(`{% url "scraping:task_status" "TASK_ID" %}`.replace('TASK_ID', taskId))
+            .then(response => response.json())
+            .then(data => {
+                console.log('Task status data:', data);
+                updateProgress(data.status);
+
+                if (data.ready) {
+                    clearInterval(interval);
+
+                    if (data.result && data.result.success) {
+                        showSyncComplete(data.result);
+                    } else {
+                        let errorMessage = 'Erro desconhecido';
+                        if (data.result && data.result.error) {
+                            errorMessage = data.result.error;
+                        } else if (data.error) {
+                            errorMessage = data.error;
+                        }
+                        showSyncError(errorMessage);
+                    }
+                }
+            })
+            .catch(error => {
+                clearInterval(interval);
+                showSyncError('Erro ao verificar status: ' + error.message);
+            });
+        }, 2000);
+    }
+
+    function showSyncStatus() {
+        document.getElementById('sync-idle').classList.add('d-none');
+        document.getElementById('sync-complete').classList.add('d-none');
+        document.getElementById('sync-error').classList.add('d-none');
+        document.getElementById('sync-status').classList.remove('d-none');
+    }
+
+    function updateProgress(status) {
+        const progressBar = document.getElementById('sync-progress');
+        const message = document.getElementById('sync-message');
+
+        switch(status) {
+            case 'PENDING':
+                progressBar.style.width = '20%';
+                message.textContent = 'Aguardando processamento...';
+                break;
+            case 'STARTED':
+                progressBar.style.width = '40%';
+                message.textContent = 'Conectando ao UNAERP...';
+                break;
+            case 'PROGRESS':
+                progressBar.style.width = '70%';
+                message.textContent = 'Extraindo dados...';
+                break;
+            case 'SUCCESS':
+                progressBar.style.width = '100%';
+                message.textContent = 'Finalizando...';
+                break;
+        }
+    }
+
+    function showSyncComplete(result) {
+        document.getElementById('sync-status').classList.add('d-none');
+        document.getElementById('sync-complete').classList.remove('d-none');
+
+        const resultsDiv = document.getElementById('sync-results');
+        resultsDiv.innerHTML = `
+            <ul class="mb-0">
+                <li>Disciplinas encontradas: ${result.total_courses}</li>
+                <li>Disciplinas criadas: ${result.courses_created}</li>
+                <li>Atividades encontradas: ${result.total_assignments}</li>
+                <li>Atividades criadas: ${result.assignments_created}</li>
+            </ul>
+        `;
+
+        // Reabilitar botão
+        resetButton();
+
+        // Recarregar página após 3 segundos
+        setTimeout(() => {
+            window.location.reload();
+        }, 3000);
+    }
+
+    function showSyncError(error) {
+        document.getElementById('sync-status').classList.add('d-none');
+        document.getElementById('sync-error').classList.remove('d-none');
+        document.getElementById('sync-error-message').textContent = error;
+
+        resetButton();
+    }
+
+    function resetButton() {
+        if (startButton) {
+            startButton.disabled = false;
+            startButton.innerHTML = '<i class="fas fa-play me-2"></i>Sincronizar Agora';
+        }
+    }
+});
+</script>
+{% endblock %}

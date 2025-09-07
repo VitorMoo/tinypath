@@ -28,9 +28,10 @@ class CustomUser(AbstractUser):
     def complete_name(self):
         return f"{self.first_name} {self.last_name}".strip()
 
+    @property
     def has_unaerp_credentials(self):
         """Verifica se o usuário tem credenciais da UNAERP configuradas"""
         try:
-            return hasattr(self, 'unaerpcredentials') and self.unaerpcredentials is not None
+            return hasattr(self, 'unaerp_credentials') and self.unaerp_credentials is not None
         except:
             return False

@@ -28,4 +28,5 @@ urlpatterns = [
     path('', home_redirect, name='home'),
     path('dashboard/', include('user.urls')),
     path('user/', include('user.urls')),
+    path('scraping/', include('scraping.urls')),
 ]

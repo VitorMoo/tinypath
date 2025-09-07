@@ -5,7 +5,8 @@ from .courses import Course
 
 class Assignment(models.Model):
     title = models.CharField(max_length=255, verbose_name='Título')
-    due_date = models.DateField(verbose_name='Data de Entrega')
+    due_date = models.DateField(null=True, blank=True, verbose_name='Data de Entrega')
+    completed = models.BooleanField(default=False, verbose_name='Concluído')
     alert_sent = models.BooleanField(default=False, verbose_name='Alerta Enviado')
     alert_sent_at = models.DateTimeField(null=True, blank=True, verbose_name='Alerta Enviado em')
     last_checked_at = models.DateTimeField(auto_now=True, verbose_name='Última Verificação')
@@ -19,4 +20,5 @@ class Assignment(models.Model):
         verbose_name_plural = 'Atividades'
 
     def __str__(self):
-        return f"{self.title} - {self.course.name} ({self.due_date})"
+        due_date_str = self.due_date.strftime('%d/%m/%Y') if self.due_date else 'Sem prazo'
+        return f"{self.title} - {self.course.name} ({due_date_str})"

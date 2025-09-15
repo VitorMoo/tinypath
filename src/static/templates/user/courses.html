@@ -4,7 +4,6 @@
 
 {% block content %}
 <div class="container my-4">
-    <!-- Cabeçalho -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="bg-white rounded-3 shadow-sm p-4">
@@ -24,48 +23,6 @@
                             Sincronizar
                         </a>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Estatísticas -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <i class="bi bi-book-half text-primary mb-3" style="font-size: 2rem;"></i>
-                    <h4 class="text-primary">{{ total_courses }}</h4>
-                    <small class="text-muted">Total de Disciplinas</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <i class="bi bi-list-task text-success mb-3" style="font-size: 2rem;"></i>
-                    <h4 class="text-success">
-                        {% for course in courses %}{{ course.assignment_set.count|add:0 }}{% if not forloop.last %}+{% endif %}{% endfor %}
-                    </h4>
-                    <small class="text-muted">Total de Atividades</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <i class="bi bi-calendar-check text-warning mb-3" style="font-size: 2rem;"></i>
-                    <h4 class="text-warning">{{ courses|length }}</h4>
-                    <small class="text-muted">Disciplinas Ativas</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <i class="bi bi-graph-up text-info mb-3" style="font-size: 2rem;"></i>
-                    <h4 class="text-info">100%</h4>
-                    <small class="text-muted">Taxa de Sincronização</small>
                 </div>
             </div>
         </div>
@@ -94,16 +51,6 @@
                                         </h6>
                                     </div>
                                     <div class="card-body">
-                                        <div class="mb-3">
-                                            <small class="text-muted d-block">Código da Disciplina</small>
-                                            <strong>{{ course.code|default:"N/A" }}</strong>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <small class="text-muted d-block">Professor</small>
-                                            <span>{{ course.instructor|default:"Não informado" }}</span>
-                                        </div>
-
                                         <div class="row text-center">
                                             <div class="col-6">
                                                 <div class="border-end">

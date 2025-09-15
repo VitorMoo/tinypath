@@ -85,7 +85,6 @@ class UnaerpScraper:
             logger.info(f"URL após login: {response.url}")
 
             # Verificar se o login foi bem-sucedido
-            # Em Moodle, um login bem-sucedido geralmente redireciona para /my/
             if self.DASHBOARD_URL in response.url or 'login/logout.php' in response.text:
                 logger.info(f"Login realizado com sucesso para usuário: {self.username}")
                 return True
@@ -508,7 +507,7 @@ class UnaerpScraper:
             activity_url (str): URL da atividade
 
         Returns:
-            Optional[date]: Data de vencimento extraída do "Status de envio"
+            Optional[date]: Data de vencimento extraída da tabela de informações da atividade ou seção de questionário
         """
         try:
             logger.debug(f"Extraindo data de vencimento de: {activity_url}")
@@ -518,77 +517,118 @@ class UnaerpScraper:
 
             soup = BeautifulSoup(response.content, 'html.parser')
 
-            # Buscar por seção "Status de envio"
+            # ESTRATÉGIA ESPECÍFICA PARA QUESTIONÁRIOS"
+            if 'mod/quiz' in activity_url:
+
+                # Buscar em divs com classe "box quizinfo"
+                quiz_info_boxes = soup.find_all('div', class_='box quizinfo')
+                for box in quiz_info_boxes:
+                    box_text = box.get_text()
+
+                    # Procurar por parágrafo que contém "será fechado em"
+                    close_paragraphs = box.find_all('p', string=lambda text: text and 'será fechado em' in text)
+                    for p in close_paragraphs:
+                        date_text = p.get_text(strip=True)
+
+                        # Extrair apenas a parte da data (após "será fechado em")
+                        if 'será fechado em' in date_text:
+                            date_part = date_text.split('será fechado em')[-1].strip()
+                            logger.debug(f"Parte da data extraída: {date_part}")
+
+                            parsed_date = self._parse_due_date(date_part)
+                            if parsed_date:
+                                logger.info(f"Data de fechamento do questionário extraída: {parsed_date}")
+                                return parsed_date
+
+                # Buscar também em texto geral para questionários
+                quiz_close_text = soup.find(string=re.compile(r'será fechado em', re.IGNORECASE))
+                if quiz_close_text:
+                    full_text = quiz_close_text.strip()
+
+                    if 'será fechado em' in full_text:
+                        date_part = full_text.split('será fechado em')[-1].strip()
+                        parsed_date = self._parse_due_date(date_part)
+                        if parsed_date:
+                            logger.info(f"Data de fechamento do questionário extraída: {parsed_date}")
+                            return parsed_date
+
+            # ESTRATÉGIA PRINCIPAL: Buscar na tabela por "Data de entrega" (para tarefas)
+            # Procurar por todas as células da tabela que contenham "Data de entrega"
+            table_cells = soup.find_all('td', string=lambda text: text and 'Data de entrega' in text)
+
+            for cell in table_cells:
+                logger.debug(f"Encontrada célula 'Data de entrega': {cell.get_text(strip=True)}")
+
+                # Buscar a célula seguinte (mesmo tr, próxima td)
+                next_cell = cell.find_next_sibling('td')
+                if next_cell:
+                    date_text = next_cell.get_text(strip=True)
+                    logger.debug(f"Data encontrada na célula seguinte: {date_text}")
+
+                    # Tentar extrair a data do texto
+                    parsed_date = self._parse_due_date(date_text)
+                    if parsed_date:
+                        logger.info(f"Data de entrega extraída com sucesso: {parsed_date}")
+                        return parsed_date
+
+            # ESTRATÉGIA ALTERNATIVA 1: Buscar em qualquer tr que contenha "Data de entrega"
+            table_rows = soup.find_all('tr')
+            for row in table_rows:
+                row_text = row.get_text()
+                if 'Data de entrega' in row_text:
+                    logger.debug(f"Linha com 'Data de entrega' encontrada: {row_text}")
+
+                    # Buscar todas as células da linha
+                    cells = row.find_all('td')
+                    if len(cells) >= 2:
+                        # Procurar a célula que contém a data (normalmente a segunda)
+                        for i, cell in enumerate(cells):
+                            if 'Data de entrega' in cell.get_text():
+                                # A data deve estar na próxima célula
+                                if i + 1 < len(cells):
+                                    date_text = cells[i + 1].get_text(strip=True)
+                                    logger.debug(f"Data encontrada na linha: {date_text}")
+
+                                    parsed_date = self._parse_due_date(date_text)
+                                    if parsed_date:
+                                        logger.info(f"Data de entrega extraída da linha: {parsed_date}")
+                                        return parsed_date
+
+            # ESTRATÉGIA ALTERNATIVA 2: Buscar por seção "Status de envio" (método anterior como fallback)
             status_section = soup.find('h3', string=lambda text: text and 'Status de envio' in text)
             if status_section:
-                # Procurar na div seguinte por informações de data
                 status_container = status_section.find_next('div')
                 if status_container:
                     status_text = status_container.get_text()
                     logger.debug(f"Status de envio encontrado: {status_text}")
 
-                    # Extrair data do texto usando regex para padrões de data em português
-                    date_patterns = [
-                        r'(\w+),\s*(\d{1,2})\s+(\w+)\s+(\d{4}),\s*(\d{1,2}):(\d{2})',  # sábado, 13 Set 2025, 08:00
-                        r'(\d{1,2})\s+(\w+)\s+(\d{4}),\s*(\d{1,2}):(\d{2})',           # 13 Set 2025, 08:00
-                        r'(\d{1,2})/(\d{1,2})/(\d{4})',                                # dd/mm/yyyy
-                        r'(\d{1,2})-(\d{1,2})-(\d{4})',                                # dd-mm-yyyy
-                        r'(\d{4})-(\d{1,2})-(\d{1,2})',                                # yyyy-mm-dd
-                    ]
+                    parsed_date = self._parse_due_date(status_text)
+                    if parsed_date:
+                        logger.info(f"Data extraída do status de envio: {parsed_date}")
+                        return parsed_date
 
-                    # Mapeamento de meses abreviados em português
-                    months_abbrev = {
-                        'jan': 1, 'fev': 2, 'mar': 3, 'abr': 4, 'mai': 5, 'jun': 6,
-                        'jul': 7, 'ago': 8, 'set': 9, 'out': 10, 'nov': 11, 'dez': 12
-                    }
-
-                    for pattern in date_patterns:
-                        matches = re.findall(pattern, status_text, re.IGNORECASE)
-                        for match in matches:
-                            try:
-                                if len(match) == 6:  # sábado, 13 Set 2025, 08:00
-                                    _, day, month_abbr, year, hour, minute = match
-                                    month = months_abbrev.get(month_abbr.lower())
-                                    if month:
-                                        return date(int(year), month, int(day))
-                                elif len(match) == 5:  # 13 Set 2025, 08:00
-                                    day, month_abbr, year, hour, minute = match
-                                    month = months_abbrev.get(month_abbr.lower())
-                                    if month:
-                                        return date(int(year), month, int(day))
-                                elif len(match) == 3:
-                                    if pattern == r'(\d{4})-(\d{1,2})-(\d{1,2})':  # yyyy-mm-dd
-                                        year, month, day = match
-                                        return date(int(year), int(month), int(day))
-                                    else:  # dd/mm/yyyy ou dd-mm-yyyy
-                                        day, month, year = match
-                                        return date(int(year), int(month), int(day))
-                            except (ValueError, TypeError) as e:
-                                logger.debug(f"Erro ao converter data {match}: {e}")
-                                continue
-
-            # Buscar por outras seções que podem conter datas
-            # Procurar por qualquer texto que contenha "aceitará envios" ou similar
-            submission_info = soup.find(string=re.compile(r'aceitará envios|prazo|até|vencimento', re.IGNORECASE))
+            # ESTRATÉGIA ALTERNATIVA 3: Buscar por qualquer texto que contenha padrões de data
+            submission_info = soup.find(string=re.compile(r'aceitará envios|prazo|até|vencimento|entrega', re.IGNORECASE))
             if submission_info:
                 parent = submission_info.parent
                 if parent:
                     text = parent.get_text()
                     logger.debug(f"Informação de envio encontrada: {text}")
 
-                    # Tentar extrair data deste texto
                     parsed_date = self._parse_due_date(text)
                     if parsed_date:
+                        logger.info(f"Data extraída de informação de envio: {parsed_date}")
                         return parsed_date
 
-            # Buscar por tabelas que podem conter informações de prazo
+            # ESTRATÉGIA ALTERNATIVA 4: Buscar em todas as tabelas
             tables = soup.find_all('table')
             for table in tables:
                 table_text = table.get_text()
-                if any(keyword in table_text.lower() for keyword in ['prazo', 'vencimento', 'até', 'entrega']):
-                    logger.debug(f"Tabela com informação de prazo: {table_text}")
+                if any(keyword in table_text.lower() for keyword in ['prazo', 'vencimento', 'até', 'entrega', 'data']):
+                    logger.debug(f"Tabela com informação de data encontrada")
                     parsed_date = self._parse_due_date(table_text)
                     if parsed_date:
+                        logger.info(f"Data extraída de tabela: {parsed_date}")
                         return parsed_date
 
             logger.debug(f"Nenhuma data de vencimento encontrada para: {activity_url}")
@@ -690,12 +730,12 @@ class UnaerpScraper:
         # Limpar o texto
         date_text = date_text.strip()
 
-        # Padrões de data comuns em português (incluindo o exemplo fornecido)
+        # Padrões de data comuns em português (incluindo os novos formatos)
         date_patterns = [
-            r'(\w+),\s*(\d{1,2})\s+(\w+)\s+(\d{4}),\s*(\d{1,2}):(\d{2})',  # sábado, 13 Set 2025, 08:00
-            r'(\d{1,2})\s+(\w+)\s+(\d{4}),\s*(\d{1,2}):(\d{2})',           # 13 Set 2025, 08:00
-            r'(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})',                      # 13 de setembro de 2025
-            r'(\d{1,2})\s+(\w+)\s+(\d{4})',                                # 13 setembro 2025
+            r'(\w+),\s*(\d{1,2})\s+(\w+)\s+(\d{4}),\s*(\d{1,2}):(\d{2})',  # domingo, 9 Nov 2025, 23:59
+            r'(\d{1,2})\s+(\w+)\s+(\d{4}),\s*(\d{1,2}):(\d{2})',           # 9 Nov 2025, 23:59
+            r'(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})',                      # 9 de novembro de 2025
+            r'(\d{1,2})\s+(\w+)\s+(\d{4})',                                # 9 novembro 2025
             r'(\d{1,2})/(\d{1,2})/(\d{4})',                                # dd/mm/yyyy
             r'(\d{1,2})-(\d{1,2})-(\d{4})',                                # dd-mm-yyyy
             r'(\d{4})-(\d{1,2})-(\d{1,2})',                                # yyyy-mm-dd

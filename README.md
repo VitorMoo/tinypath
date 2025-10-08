@@ -1,9 +1,6 @@
 # UnaTrack
 
 An intelligent academic activity management system with automated synchronization and email notifications.
-
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/VitorMoo/unatrack)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/django-5.0-green.svg)](https://www.djangoproject.com/)
 

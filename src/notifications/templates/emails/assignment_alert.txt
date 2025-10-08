@@ -1,0 +1,26 @@
+UnaTrack - Alerta de Atividades
+================================
+
+Olá, {{ user.first_name }}!
+
+Você tem {{ assignments|length }} atividade{{ assignments|length|pluralize }} próxima{{ assignments|length|pluralize }} do prazo de entrega:
+
+{% for assignment in assignments %}
+-----------------------------------
+{{ assignment.title }}
+-----------------------------------
+📖 Disciplina: {{ assignment.course.name }}
+{% if assignment.course.code %}🔖 Código: {{ assignment.course.code }}{% endif %}
+📅 Data de Entrega: {{ assignment.due_date|date:"d/m/Y" }}
+⏰ Tempo restante: {{ assignment.days_until_due }} dia{{ assignment.days_until_due|pluralize }}
+
+{% endfor %}
+
+Acesse o UnaTrack para marcar suas atividades como concluídas e manter seu progresso organizado!
+
+{{ site_url }}
+
+-----------------------------------
+Este é um e-mail automático. Por favor, não responda.
+Você está recebendo este e-mail porque ativou os alertas de atividades no UnaTrack.
+Para desativar estes alertas, acesse suas Configurações em: {{ settings_url }}

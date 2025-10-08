@@ -121,35 +121,48 @@
                             {% for assignment in assignments_with_due %}
                             <div class="list-group-item border-0 px-0">
                                 <div class="d-flex w-100 justify-content-between align-items-start">
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex align-items-center mb-2">
-                                            <h6 class="mb-0 me-2">{{ assignment.title }}</h6>
-                                            {% if assignment.type == 'quiz' %}
-                                                <span class="badge bg-info rounded-pill">Questionário</span>
-                                            {% elif assignment.type == 'assignment' %}
-                                                <span class="badge bg-primary rounded-pill">Tarefa</span>
-                                            {% else %}
-                                                <span class="badge bg-secondary rounded-pill">{{ assignment.type|title }}</span>
+                                    <div class="d-flex align-items-start flex-grow-1">
+                                        <!-- Checkbox para marcar como concluída -->
+                                        <div class="form-check me-3 mt-1">
+                                            <input class="form-check-input assignment-checkbox"
+                                                   type="checkbox"
+                                                   data-assignment-id="{{ assignment.id }}"
+                                                   {% if assignment.completed %}checked{% endif %}>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <h6 class="mb-0 me-2 {% if assignment.completed %}text-decoration-line-through text-muted{% endif %}">{{ assignment.title }}</h6>
+                                                {% if assignment.type == 'quiz' %}
+                                                    <span class="badge bg-info rounded-pill">Questionário</span>
+                                                {% elif assignment.type == 'assignment' %}
+                                                    <span class="badge bg-primary rounded-pill">Tarefa</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary rounded-pill">{{ assignment.type|title }}</span>
+                                                {% endif %}
+                                            </div>
+                                            <p class="mb-1 text-muted">
+                                                <i class="bi bi-book me-1"></i>
+                                                {{ assignment.course.name }}
+                                            </p>
+                                            {% if assignment.description %}
+                                                <small class="text-muted">{{ assignment.description|truncatechars:150 }}</small>
                                             {% endif %}
                                         </div>
-                                        <p class="mb-1 text-muted">
-                                            <i class="bi bi-book me-1"></i>
-                                            {{ assignment.course.name }}
-                                        </p>
-                                        {% if assignment.description %}
-                                            <small class="text-muted">{{ assignment.description|truncatechars:150 }}</small>
-                                        {% endif %}
                                     </div>
                                     <div class="text-end">
-                                        {% if assignment.due_date %}
+                                        {% if assignment.completed %}
+                                            <span class="badge bg-success mb-2">Concluída</span>
+                                        {% elif assignment.due_date %}
                                             {% now "Y-m-d" as today %}
                                             {% if assignment.due_date|date:"Y-m-d" < today %}
                                                 <span class="badge bg-danger mb-2">Atrasado</span>
                                             {% elif assignment.due_date|date:"Y-m-d" == today %}
                                                 <span class="badge bg-warning mb-2">Hoje</span>
                                             {% else %}
-                                                <span class="badge bg-success mb-2">No Prazo</span>
+                                                <span class="badge bg-info mb-2">No Prazo</span>
                                             {% endif %}
+                                        {% endif %}
+                                        {% if assignment.due_date %}
                                             <div class="text-muted">
                                                 <i class="bi bi-calendar-event me-1"></i>
                                                 {{ assignment.due_date|date:"d/m/Y" }}
@@ -192,17 +205,30 @@
                             {% for assignment in assignments_without_due %}
                             <div class="list-group-item border-0 px-0 py-2">
                                 <div class="d-flex justify-content-between align-items-start">
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-1">{{ assignment.title|truncatechars:30 }}</h6>
-                                        <small class="text-muted">{{ assignment.course.name|truncatechars:25 }}</small>
-                                        <div class="mt-1">
-                                            {% if assignment.type == 'quiz' %}
-                                                <span class="badge bg-info rounded-pill">Questionário</span>
-                                            {% elif assignment.type == 'assignment' %}
-                                                <span class="badge bg-primary rounded-pill">Tarefa</span>
-                                            {% else %}
-                                                <span class="badge bg-secondary rounded-pill">{{ assignment.type|title }}</span>
-                                            {% endif %}
+                                    <div class="d-flex align-items-start flex-grow-1">
+                                        <!-- Checkbox para marcar como concluída -->
+                                        <div class="form-check me-2">
+                                            <input class="form-check-input assignment-checkbox"
+                                                   type="checkbox"
+                                                   data-assignment-id="{{ assignment.id }}"
+                                                   {% if assignment.completed %}checked{% endif %}>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1 {% if assignment.completed %}text-decoration-line-through text-muted{% endif %}">{{ assignment.title|truncatechars:30 }}</h6>
+                                            <small class="text-muted">{{ assignment.course.name|truncatechars:25 }}</small>
+                                            <div class="mt-1">
+                                                {% if assignment.completed %}
+                                                    <span class="badge bg-success rounded-pill">Concluída</span>
+                                                {% else %}
+                                                    {% if assignment.type == 'quiz' %}
+                                                        <span class="badge bg-info rounded-pill">Questionário</span>
+                                                    {% elif assignment.type == 'assignment' %}
+                                                        <span class="badge bg-primary rounded-pill">Tarefa</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary rounded-pill">{{ assignment.type|title }}</span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
                                         </div>
                                     </div>
                                     {% if assignment.assignment_url %}
@@ -242,4 +268,60 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+    // Função para obter o CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Adicionar event listeners para os checkboxes
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('.assignment-checkbox');
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const assignmentId = this.getAttribute('data-assignment-id');
+                const isChecked = this.checked;
+
+                // Fazer requisição AJAX
+                fetch(`/dashboard/assignments/${assignmentId}/toggle/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Recarregar a página para atualizar os badges e estilos
+                        location.reload();
+                    } else {
+                        alert('Erro ao atualizar atividade');
+                        // Reverter o checkbox em caso de erro
+                        checkbox.checked = !isChecked;
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao atualizar atividade');
+                    // Reverter o checkbox em caso de erro
+                    checkbox.checked = !isChecked;
+                });
+            });
+        });
+    });
+</script>
 {% endblock %}

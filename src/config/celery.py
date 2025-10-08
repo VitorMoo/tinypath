@@ -14,10 +14,16 @@ app.autodiscover_tasks()
 def debug_task(self):
     print(f'Request: {self.request!r}')
 
+from celery.schedules import crontab
+
 app.conf.beat_schedule = {
     'periodic-scraping': {
         'task': 'scraping.tasks.periodic_scraping',
         'schedule': 3600.0,
+    },
+    'send-assignment-alerts': {
+        'task': 'notifications.send_assignment_alerts',
+        'schedule': crontab(hour=8, minute=0),  # Executa diariamente às 8:00 AM
     },
 }
 app.conf.timezone = 'UTC'

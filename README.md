@@ -90,13 +90,6 @@ UnaTrack addresses these challenges through:
   - Configure notification preferences
   - Manage UNAERP credentials
 
-### Quality Assurance
-- Unit tests for critical functionalities
-- Test coverage for:
-  - Completion marking system
-  - Email and notification delivery
-  - Statistics and counters
-
 ## Technology Stack
 
 ### Backend
@@ -305,6 +298,16 @@ docker exec unatrack_celery_beat celery -A config inspect active
 # View scheduled tasks (Beat)
 docker exec unatrack_celery_beat celery -A config inspect scheduled
 ```
+
+### Images
+- Dashboard
+<img width="1469" height="788" alt="Screenshot 2025-10-07 at 22 18 49" src="https://github.com/user-attachments/assets/02d9d7ab-0100-466d-a846-5aa5eb22bc30" />
+
+- Courses
+<img width="1465" height="755" alt="Screenshot 2025-10-07 at 22 20 15" src="https://github.com/user-attachments/assets/028ef3a6-88a0-4237-85e1-146163aec716" />
+
+- Assignments
+<img width="1468" height="784" alt="Screenshot 2025-10-07 at 22 20 52" src="https://github.com/user-attachments/assets/a48783a6-80b1-4a05-9db9-8b54b2cf8bef" />
 
 ## License
 

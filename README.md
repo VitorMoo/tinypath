@@ -41,17 +41,10 @@ UnaTrack addresses these challenges through:
 
 ## Key Features
 
-### 📊 Dashboard Completo
-- [x] **Visão geral** com estatísticas de disciplinas e atividades
-- [x] **Cards informativos** mostrando total de cursos, atividades e prazos próximos
-- [x] **Lista de disciplinas** com contador de atividades por curso
-
-### 📚 Gerenciamento de Disciplinas
-- [x] **Visualização** de todas as disciplinas cadastradas
-### Dashboard Management
-- Comprehensive overview with course and assignment statistics
-- Activity counters per course
-- Real-time status tracking
+### Complete Dashboard
+- Overview with course and assignment statistics
+- Info cards showing totals for courses, assignments, and upcoming deadlines
+- Course list with an activity counter per course
 
 ### Course Management
 - Course visualization with assignment counters
@@ -65,7 +58,6 @@ UnaTrack addresses these challenges through:
 - Dynamic status badges:
   - Completed (when marked)
   - Overdue (past deadline and not completed)
-  - Due Today
   - On Time
 - Course-based filtering
 - Real-time statistics:
@@ -117,7 +109,6 @@ UnaTrack addresses these challenges through:
 - **Celery 5.5** - Asynchronous processing and task scheduling
 - **Redis** - Celery broker and caching
 - **BeautifulSoup4** - UNAERP portal web scraping
-- **Requests** - HTTP client for scraping
 
 ### Frontend
 - **Bootstrap 5** - CSS framework
@@ -128,12 +119,6 @@ UnaTrack addresses these challenges through:
 - **Docker** - Containerization
 - **Docker Compose** - Container orchestration
 - **MailHog** - SMTP server for development
-- **Nginx** (planned) - Production web server
-
-### Development Tools
-- **pytest** - Testing framework
-- **black** - Code formatting
-- **flake8** - Linting
 
 ## Installation
 
@@ -332,13 +317,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Vitor Moreira**
 - GitHub: [@VitorMoo](https://github.com/VitorMoo)
-- LinkedIn: [Vitor Moreira](https://www.linkedin.com/in/vitor-moreira)
-
----
-
-Developed as an academic project to solve real-world problems in assignment management and deadline tracking.
-                ├── courses.html
-                └── account_settings.html
 ```
 
 ---

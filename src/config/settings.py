@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'user',
     'core',
     'scraping',
+    'notifications',
 ]
 
 MIDDLEWARE = [
@@ -146,3 +147,14 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+
+# Email Configuration (MailHog for development)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '1025'))
+EMAIL_USE_TLS = bool(int(os.getenv('EMAIL_USE_TLS', '0')))
+EMAIL_USE_SSL = bool(int(os.getenv('EMAIL_USE_SSL', '0')))
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@unatrack.com')
+

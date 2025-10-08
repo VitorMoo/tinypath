@@ -1,9 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_protect
 from django.utils import timezone
+from django.http import JsonResponse
 from datetime import timedelta
 from .models import CustomUser
 from core.models import Course, Assignment
@@ -11,20 +12,18 @@ from core.models import Course, Assignment
 
 @login_required
 def dashboard_view(request):
-    # Buscar dados do usuário
     courses = Course.objects.filter(user=request.user)
     assignments = Assignment.objects.filter(course__user=request.user)
 
-    # Calcular estatísticas
     total_courses = courses.count()
     total_assignments = assignments.count()
 
-    # Atividades próximas do vencimento (próximos 7 dias)
     next_week = timezone.now() + timedelta(days=7)
     upcoming_assignments = assignments.filter(
         due_date__isnull=False,
         due_date__lte=next_week,
-        due_date__gte=timezone.now()
+        due_date__gte=timezone.now(),
+        completed=False
     ).count()
 
     context = {
@@ -59,14 +58,12 @@ def assignments_view(request):
     if course_filter:
         assignments = assignments.filter(course__id=course_filter)
 
-    # Separar por status
     assignments_with_due = assignments.filter(due_date__isnull=False)
     assignments_without_due = assignments.filter(due_date__isnull=True)
 
-    # Estatísticas
     now = timezone.now().date()
-    overdue = assignments_with_due.filter(due_date__lt=now).count()
-    upcoming = assignments_with_due.filter(due_date__gte=now, due_date__lte=now + timedelta(days=7)).count()
+    overdue = assignments_with_due.filter(due_date__lt=now, completed=False).count()
+    upcoming = assignments_with_due.filter(due_date__gte=now, due_date__lte=now + timedelta(days=7), completed=False).count()
 
     context = {
         'assignments': assignments,
@@ -186,3 +183,19 @@ def logout_view(request):
     logout(request)
     messages.success(request, 'Logout realizado com sucesso!')
     return redirect('login')
+
+
+@login_required
+def toggle_assignment_completion(request, assignment_id):
+    """Toggle do status de conclusão de uma atividade"""
+    if request.method == 'POST':
+        assignment = get_object_or_404(Assignment, id=assignment_id, course__user=request.user)
+        assignment.completed = not assignment.completed
+        assignment.save()
+
+        return JsonResponse({
+            'success': True,
+            'completed': assignment.completed
+        })
+
+    return JsonResponse({'success': False, 'error': 'Método não permitido'}, status=405)

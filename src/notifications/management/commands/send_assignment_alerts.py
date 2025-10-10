@@ -20,14 +20,14 @@ class Command(BaseCommand):
         parser.add_argument(
             '--user-id',
             type=int,
-            help='Envia apenas para um usuário específico (ID)',
+            help='Envia apenas para um usuário específico',
         )
 
     def handle(self, *args, **options):
         dry_run = options.get('dry_run', False)
         user_id = options.get('user_id')
 
-        self.stdout.write(self.style.SUCCESS('Iniciando envio de alertas de atividades...'))
+        self.stdout.write(self.style.SUCCESS('Iniciando envio de alertas de atividades'))
 
         users = CustomUser.objects.filter(receber_emails=True)
 
@@ -38,6 +38,7 @@ class Command(BaseCommand):
         total_users_notified = 0
 
         for user in users:
+
             # Buscar atividades pendentes do usuário
             today = timezone.now().date()
             alert_days = user.dias_antecedencia_alerta or 3
@@ -107,7 +108,7 @@ class Command(BaseCommand):
                     )
 
                     self.stdout.write(
-                        self.style.SUCCESS(f'  ✅ E-mail enviado para {user.email}')
+                        self.style.SUCCESS(f'   E-mail enviado para {user.email}')
                     )
                     self.stdout.write(f'    Atividades alertadas: {len(assignments)}')
 
@@ -116,7 +117,7 @@ class Command(BaseCommand):
 
                 except Exception as e:
                     self.stdout.write(
-                        self.style.ERROR(f'  ❌ Erro ao enviar e-mail para {user.email}: {str(e)}')
+                        self.style.ERROR(f'  Erro ao enviar e-mail para {user.email}: {str(e)}')
                     )
 
         self.stdout.write('\n' + '='*50)
@@ -126,7 +127,7 @@ class Command(BaseCommand):
             )
         else:
             self.stdout.write(
-                self.style.SUCCESS(f'✅ Processo concluído!')
+                self.style.SUCCESS(f'Processo concluído!')
             )
             self.stdout.write(f'   Total de e-mails enviados: {total_emails_sent}')
             self.stdout.write(f'   Total de usuários notificados: {total_users_notified}')

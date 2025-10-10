@@ -23,7 +23,7 @@ app.conf.beat_schedule = {
     },
     'send-assignment-alerts': {
         'task': 'notifications.send_assignment_alerts',
-        'schedule': crontab(hour=8, minute=0),  # Executa diariamente às 8:00 AM
+        'schedule': crontab(hour=8, minute=0),  # Executa 8:00 AM
     },
 }
 app.conf.timezone = 'UTC'

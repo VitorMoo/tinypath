@@ -76,3 +76,7 @@ Desktop.ini
 *.swo
 *.bak
 *.tmp
+
+# Celery
+celerybeat-schedule*
+celerybeat.pid

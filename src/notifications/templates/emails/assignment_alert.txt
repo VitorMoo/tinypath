@@ -10,9 +10,9 @@ Você tem {{ assignments|length }} atividade{{ assignments|length|pluralize }} p
 {{ assignment.title }}
 -----------------------------------
 📖 Disciplina: {{ assignment.course.name }}
-{% if assignment.course.code %}🔖 Código: {{ assignment.course.code }}{% endif %}
-📅 Data de Entrega: {{ assignment.due_date|date:"d/m/Y" }}
-⏰ Tempo restante: {{ assignment.days_until_due }} dia{{ assignment.days_until_due|pluralize }}
+{% if assignment.course.code %}Código: {{ assignment.course.code }}{% endif %}
+Data de Entrega: {{ assignment.due_date|date:"d/m/Y" }}
+Tempo restante: {{ assignment.days_until_due }} dia{{ assignment.days_until_due|pluralize }}
 
 {% endfor %}
 

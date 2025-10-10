@@ -59,17 +59,14 @@ def start_scraping_view(request):
     View para iniciar scraping manual
     """
     try:
-        # Verificar se o usuário tem credenciais
         if not hasattr(request.user, 'unaerp_credentials'):
             return JsonResponse({
                 'success': False,
                 'error': 'Credenciais UNAERP não configuradas'
             })
 
-        # Log para debug
         print(f"Iniciando scraping para usuário: {request.user.email}")
 
-        # Iniciar tarefa de scraping
         from scraping.tasks import scrape_user_data
         task = scrape_user_data.delay(request.user.id)
 
@@ -137,7 +134,6 @@ def scraping_dashboard(request):
         credentials = None
         has_credentials = False
 
-    # Estatísticas dos dados do usuário
     from core.models import Course, Assignment
 
     total_courses = Course.objects.filter(user=request.user).count()
